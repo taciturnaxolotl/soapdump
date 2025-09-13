@@ -46,24 +46,20 @@
               mkdir -p $out/bin
               cp build/soapdump $out/bin/
               
-              # Generate shell completions
+              # Generate and install shell completions
               mkdir -p completions
-              $out/bin/soapdump --help > /dev/null 2>&1 || true
+              $out/bin/soapdump --generate-bash-completion > completions/soapdump.bash
+              $out/bin/soapdump --generate-zsh-completion > completions/soapdump.zsh
+              $out/bin/soapdump --generate-fish-completion > completions/soapdump.fish
               
-              # Install shell completions if they exist
-              if [ -f completions/soapdump.bash ]; then
-                installShellCompletion --bash completions/soapdump.bash
-              fi
-              if [ -f completions/soapdump.fish ]; then
-                installShellCompletion --fish completions/soapdump.fish
-              fi
-              if [ -f completions/soapdump.zsh ]; then
-                installShellCompletion --zsh completions/soapdump.zsh
-              fi
+              installShellCompletion --cmd soapdump \
+                --bash completions/soapdump.bash \
+                --fish completions/soapdump.fish \
+                --zsh completions/soapdump.zsh
               
-              # Generate man page
+              # Generate and install man page
               mkdir -p $out/share/man/man1
-              $out/bin/soapdump --help | sed 's/^/    /' > $out/share/man/man1/soapdump.1
+              $out/bin/soapdump --man > $out/share/man/man1/soapdump.1
             '';
             
             meta = with pkgs.lib; {

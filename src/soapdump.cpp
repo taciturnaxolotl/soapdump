@@ -9,6 +9,7 @@
 #include <numeric>
 #include <iomanip>
 #include <getopt.h>
+#include <unordered_map>
 
 // Transaction data structure
 struct Transaction {
@@ -42,6 +43,10 @@ struct Response {
 
 // Function prototypes
 void showHelp(const char* programName);
+void generateBashCompletion();
+void generateZshCompletion();
+void generateFishCompletion();
+void generateManPage();
 std::string extractXmlValue(const std::string& xml, const std::string& tag);
 std::string extractXmlAttribute(const std::string& xml, const std::string& attribute);
 std::vector<std::string> extractRequests(const std::string& logContent);
@@ -61,6 +66,10 @@ int main(int argc, char* argv[]) {
         {"help", no_argument, 0, 'h'},
         {"summary", no_argument, 0, 's'},
         {"raw", no_argument, 0, 'r'},
+        {"generate-bash-completion", no_argument, 0, 0},
+        {"generate-zsh-completion", no_argument, 0, 0},
+        {"generate-fish-completion", no_argument, 0, 0},
+        {"man", no_argument, 0, 0},
         {0, 0, 0, 0}
     };
 
@@ -68,6 +77,22 @@ int main(int argc, char* argv[]) {
     int opt;
     while ((opt = getopt_long(argc, argv, "hsr", longOptions, &optionIndex)) != -1) {
         switch (opt) {
+            case 0:
+                // Long options without short equivalents
+                if (strcmp(longOptions[optionIndex].name, "generate-bash-completion") == 0) {
+                    generateBashCompletion();
+                    return 0;
+                } else if (strcmp(longOptions[optionIndex].name, "generate-zsh-completion") == 0) {
+                    generateZshCompletion();
+                    return 0;
+                } else if (strcmp(longOptions[optionIndex].name, "generate-fish-completion") == 0) {
+                    generateFishCompletion();
+                    return 0;
+                } else if (strcmp(longOptions[optionIndex].name, "man") == 0) {
+                    generateManPage();
+                    return 0;
+                }
+                break;
             case 'h':
                 showHelp(argv[0]);
                 return 0;
@@ -131,9 +156,13 @@ void showHelp(const char* programName) {
     std::cout << "USAGE:\n";
     std::cout << "    " << programName << " [OPTIONS] <logfile>\n\n";
     std::cout << "OPTIONS:\n";
-    std::cout << "    -h, --help      Show this help message\n";
-    std::cout << "    -s, --summary   Show summary statistics only\n";
-    std::cout << "    -r, --raw       Output raw structured data (default)\n\n";
+    std::cout << "    -h, --help                    Show this help message\n";
+    std::cout << "    -s, --summary                 Show summary statistics only\n";
+    std::cout << "    -r, --raw                     Output raw structured data (default)\n";
+    std::cout << "    --generate-bash-completion    Generate Bash completion script\n";
+    std::cout << "    --generate-zsh-completion     Generate Zsh completion script\n";
+    std::cout << "    --generate-fish-completion    Generate Fish completion script\n";
+    std::cout << "    --man                         Generate man page\n\n";
     std::cout << "OUTPUT FORMAT:\n";
     std::cout << "    TRANS_NUM|AMOUNT|CURRENCY|FIRSTNAME|LASTNAME|STREET|CITY|STATE|ZIP|CCTYPE|CCLAST4|EXPMONTH|EXPYEAR|CVV|TRANSID|STATUS|CORRID|PROC_AMOUNT\n\n";
     std::cout << "FIELD DESCRIPTIONS:\n";
@@ -170,6 +199,131 @@ void showHelp(const char* programName) {
     std::cout << "    " << programName << " -s payments.log\n";
 }
 
+void generateBashCompletion() {
+    std::cout << R"(
+_soapdump_completions()
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="--help --summary --raw --generate-bash-completion --generate-zsh-completion --generate-fish-completion --man"
+
+    if [[ ${cur} == -* ]] ; then
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+        return 0
+    fi
+
+    # Complete with log files if not an option
+    if [[ ${cur} != -* ]]; then
+        COMPREPLY=( $(compgen -f -X '!*.log' -- ${cur}) )
+        return 0
+    fi
+}
+
+complete -F _soapdump_completions soapdump
+)" << std::endl;
+}
+
+void generateZshCompletion() {
+    std::cout << R"(
+#compdef soapdump
+
+_arguments -s -S \
+  '(-h --help)'{-h,--help}'[Show help message]' \
+  '(-s --summary)'{-s,--summary}'[Show summary statistics only]' \
+  '(-r --raw)'{-r,--raw}'[Output raw structured data (default)]' \
+  '--generate-bash-completion[Generate Bash completion script]' \
+  '--generate-zsh-completion[Generate Zsh completion script]' \
+  '--generate-fish-completion[Generate Fish completion script]' \
+  '--man[Generate man page]' \
+  '*:log file:_files -g "*.log"'
+)" << std::endl;
+}
+
+void generateFishCompletion() {
+    std::cout << R"(
+function __fish_soapdump_no_subcommand
+    set cmd (commandline -opc)
+    if [ (count $cmd) -eq 1 ]
+        return 0
+    end
+    return 1
+end
+
+complete -c soapdump -s h -l help -d "Show help message"
+complete -c soapdump -s s -l summary -d "Show summary statistics only"
+complete -c soapdump -s r -l raw -d "Output raw structured data (default)"
+complete -c soapdump -l generate-bash-completion -d "Generate Bash completion script"
+complete -c soapdump -l generate-zsh-completion -d "Generate Zsh completion script"
+complete -c soapdump -l generate-fish-completion -d "Generate Fish completion script"
+complete -c soapdump -l man -d "Generate man page"
+complete -c soapdump -n "__fish_soapdump_no_subcommand" -a "*.log" -d "Log file"
+)" << std::endl;
+}
+
+void generateManPage() {
+    std::cout << R"(.TH SOAPDUMP 1 "September 2025" "soapdump 0.1.0" "User Commands"
+.SH NAME
+soapdump \- PayPal SOAP log parser
+.SH SYNOPSIS
+.B soapdump
+[\fIOPTIONS\fR] \fILOGFILE\fR
+.SH DESCRIPTION
+.B soapdump
+is a high-performance PayPal SOAP log parser that extracts transaction data from log files and outputs it in a structured format.
+.SH OPTIONS
+.TP
+.BR \-h ", " \-\-help
+Show help message and exit.
+.TP
+.BR \-s ", " \-\-summary
+Show summary statistics only.
+.TP
+.BR \-r ", " \-\-raw
+Output raw structured data (default).
+.TP
+.BR \-\-generate-bash-completion
+Generate Bash completion script.
+.TP
+.BR \-\-generate-zsh-completion
+Generate Zsh completion script.
+.TP
+.BR \-\-generate-fish-completion
+Generate Fish completion script.
+.TP
+.BR \-\-man
+Generate this man page.
+.SH OUTPUT FORMAT
+The output is pipe-separated with the following fields:
+.PP
+TRANS_NUM|AMOUNT|CURRENCY|FIRSTNAME|LASTNAME|STREET|CITY|STATE|ZIP|CCTYPE|CCLAST4|EXPMONTH|EXPYEAR|CVV|TRANSID|STATUS|CORRID|PROC_AMOUNT
+.SH EXAMPLES
+.TP
+Get all transactions:
+.B soapdump payments.log
+.TP
+Get only successful transactions:
+.B soapdump payments.log | grep Success
+.TP
+Count transactions by state:
+.B soapdump payments.log | cut -d'|' -f8 | sort | uniq -c | sort -nr
+.TP
+Find largest transaction:
+.B soapdump payments.log | sort -t'|' -k2 -nr | head -1
+.TP
+Get transactions over $500:
+.B soapdump payments.log | awk -F'|' '$2 > 500'
+.TP
+Summary stats:
+.B soapdump -s payments.log
+.SH AUTHOR
+Kieran Klukas <me@dunkirk.sh>
+.SH COPYRIGHT
+Copyright \(co 2025 Kieran Klukas. License: MIT.
+)" << std::endl;
+}
+
 std::string extractXmlValue(const std::string& xml, const std::string& tag) {
     std::regex pattern("<" + tag + "(?:[^>]*)>([^<]*)</" + tag + ">");
     std::smatch match;
@@ -191,7 +345,7 @@ std::string extractXmlAttribute(const std::string& xml, const std::string& attri
 std::vector<std::string> extractRequests(const std::string& logContent) {
     std::vector<std::string> requests;
     std::regex pattern("PPAPIService: Request: (.*)");
-
+    
     std::string::const_iterator searchStart(logContent.cbegin());
     std::smatch match;
     while (std::regex_search(searchStart, logContent.cend(), match, pattern)) {
@@ -200,14 +354,14 @@ std::vector<std::string> extractRequests(const std::string& logContent) {
         }
         searchStart = match.suffix().first;
     }
-
+    
     return requests;
 }
 
 std::vector<std::string> extractResponses(const std::string& logContent) {
     std::vector<std::string> responses;
     std::regex pattern("PPAPIService: Response: <\\?.*\\?>(.*)");
-
+    
     std::string::const_iterator searchStart(logContent.cbegin());
     std::smatch match;
     while (std::regex_search(searchStart, logContent.cend(), match, pattern)) {
@@ -216,36 +370,36 @@ std::vector<std::string> extractResponses(const std::string& logContent) {
         }
         searchStart = match.suffix().first;
     }
-
+    
     return responses;
 }
 
 std::vector<Response> parseResponses(const std::vector<std::string>& responseXmls) {
     std::vector<Response> responses;
-
+    
     for (const auto& xml : responseXmls) {
         Response response;
         response.transId = extractXmlValue(xml, "TransactionID");
         response.status = extractXmlValue(xml, "Ack");
         response.corrId = extractXmlValue(xml, "CorrelationID");
         response.procAmount = extractXmlValue(xml, "Amount");
-
+        
         responses.push_back(response);
     }
-
+    
     return responses;
 }
 
 std::vector<Transaction> parseTransactions(const std::vector<std::string>& requestXmls, const std::vector<Response>& responses) {
     std::vector<Transaction> transactions;
     int transNum = 1;
-
+    
     for (size_t i = 0; i < requestXmls.size(); ++i) {
         const auto& xml = requestXmls[i];
-
+        
         Transaction transaction;
         transaction.transNum = transNum++;
-
+        
         // Extract request fields
         transaction.amount = extractXmlValue(xml, "ebl:OrderTotal");
         transaction.currency = extractXmlAttribute(xml, "currencyID");
@@ -260,7 +414,7 @@ std::vector<Transaction> parseTransactions(const std::vector<std::string>& reque
         transaction.expMonth = extractXmlValue(xml, "ebl:ExpMonth");
         transaction.expYear = extractXmlValue(xml, "ebl:ExpYear");
         transaction.cvv = extractXmlValue(xml, "ebl:CVV2");
-
+        
         // Get corresponding response data
         if (i < responses.size()) {
             transaction.transId = responses[i].transId;
@@ -268,10 +422,10 @@ std::vector<Transaction> parseTransactions(const std::vector<std::string>& reque
             transaction.corrId = responses[i].corrId;
             transaction.procAmount = responses[i].procAmount;
         }
-
+        
         transactions.push_back(transaction);
     }
-
+    
     return transactions;
 }
 
@@ -300,35 +454,35 @@ void outputRawData(const std::vector<Transaction>& transactions) {
 
 void outputSummary(const std::vector<Transaction>& transactions) {
     std::cout << "=== SUMMARY ===" << std::endl;
-
+    
     // Count transactions
     int total = transactions.size();
-    int successful = std::count_if(transactions.begin(), transactions.end(),
+    int successful = std::count_if(transactions.begin(), transactions.end(), 
                                   [](const Transaction& t) { return t.status == "Success"; });
-
+    
     std::cout << "Total Transactions: " << total << std::endl;
     std::cout << "Successful: " << successful << std::endl;
     std::cout << "Failed: " << (total - successful) << std::endl;
     std::cout << std::endl;
-
+    
     // Top 5 states
     std::map<std::string, int> stateCounts;
     for (const auto& t : transactions) {
         stateCounts[t.state]++;
     }
-
+    
     std::cout << "Top 5 States by Transaction Count:" << std::endl;
     std::vector<std::pair<std::string, int>> stateCountVec(stateCounts.begin(), stateCounts.end());
-    std::sort(stateCountVec.begin(), stateCountVec.end(),
+    std::sort(stateCountVec.begin(), stateCountVec.end(), 
              [](const auto& a, const auto& b) { return a.second > b.second; });
-
+    
     int count = 0;
     for (const auto& sc : stateCountVec) {
         if (count++ >= 5) break;
         std::cout << "  " << sc.first << ": " << sc.second << std::endl;
     }
     std::cout << std::endl;
-
+    
     // Transaction amount stats
     std::vector<double> amounts;
     for (const auto& t : transactions) {
@@ -338,12 +492,12 @@ void outputSummary(const std::vector<Transaction>& transactions) {
             // Skip invalid amounts
         }
     }
-
+    
     if (!amounts.empty()) {
         double totalAmount = std::accumulate(amounts.begin(), amounts.end(), 0.0);
         double largest = *std::max_element(amounts.begin(), amounts.end());
         double smallest = *std::min_element(amounts.begin(), amounts.end());
-
+        
         std::cout << "Transaction Amount Stats:" << std::endl;
         std::cout << "  Total: $" << std::fixed << std::setprecision(2) << totalAmount << std::endl;
         std::cout << "  Largest: $" << std::fixed << std::setprecision(2) << largest << std::endl;
