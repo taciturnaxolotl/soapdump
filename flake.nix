@@ -38,8 +38,9 @@
             ];
             
             buildPhase = ''
-              cmake -B build -S .
-              cmake --build build --config Release
+              # Direct compilation instead of using CMake
+              mkdir -p build
+              clang++ -std=c++17 -O3 -o build/soapdump src/soapdump.cpp
             '';
             
             installPhase = ''
