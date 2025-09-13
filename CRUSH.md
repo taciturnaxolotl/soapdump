@@ -1,36 +1,46 @@
 # CRUSH Development Guidelines
 
 ## Commands
-- **Run parser**: `./transaction-parser.sh <logfile>`
-- **Test parser**: `./transaction-parser.sh -s <logfile>` (summary mode)
-- **Help**: `./transaction-parser.sh --help`
+- **Build with nix**: `nix build`
+- **Run parser**: `./result/bin/transaction-parser <logfile>`
+- **Test parser**: `./result/bin/transaction-parser -s <logfile>` (summary mode)
+- **Help**: `./result/bin/transaction-parser --help`
+- **Build with clang**: `clang++ -std=c++17 -O3 -o transaction-parser src/transaction-parser.cpp`
 
 ## Code Style
-- **Language**: Bash scripting
-- **Shebang**: Use `#!/usr/bin/env nix-shell` with dependencies
+- **Language**: C++17
 - **Formatting**: 
   - 4-space indentation
-  - Functions use snake_case
-  - Variables use UPPER_CASE
+  - Functions use camelCase
+  - Classes use PascalCase
+  - Variables use camelCase
 - **Structure**:
   - Clear function separation
   - Help documentation included
-  - Error handling with exit codes
-- **Dependencies**: gnugrep, gnused, coreutils (via nix-shell)
+  - Error handling with return codes
+- **Dependencies**: Standard C++ libraries only
+
+## Build System
+- **Nix Flake**: For reproducible builds and development environment
+- **CMake**: For cross-platform build configuration
+- **Compiler**: Clang++ with C++17 standard
 
 ## Best Practices
 - Always validate input files exist
-- Use proper error messages and exit codes
+- Use proper error messages and return codes
 - Include comprehensive help documentation
-- Follow tab-separated output format for structured data
-- Handle edge cases in XML parsing
+- Follow pipe-separated output format for structured data
+- Handle edge cases in XML parsing with regex
+- Use STL containers and algorithms for performance
 
 ## Naming Conventions
-- Variables: UPPER_CASE
-- Functions: snake_case
-- Files: kebab-case.sh
+- Variables: camelCase
+- Functions: camelCase
+- Classes: PascalCase
+- Files: kebab-case.cpp
 
 ## Error Handling
 - Check file existence before processing
 - Validate arguments
-- Exit with appropriate codes (0 for success, 1 for error)
+- Return appropriate codes (0 for success, 1 for error)
+- Use try/catch blocks for exception handling
