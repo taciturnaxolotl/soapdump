@@ -1,0 +1,21 @@
+# Build artifacts
+/build/
+/result
+/transaction-parser
+
+# Nix
+.direnv/
+.envrc
+
+# Test data
+*.log
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
