@@ -163,40 +163,8 @@ void showHelp(const char* programName) {
     std::cout << "    --generate-zsh-completion     Generate Zsh completion script\n";
     std::cout << "    --generate-fish-completion    Generate Fish completion script\n";
     std::cout << "    --man                         Generate man page\n\n";
-    std::cout << "OUTPUT FORMAT:\n";
-    std::cout << "    TRANS_NUM|AMOUNT|CURRENCY|FIRSTNAME|LASTNAME|STREET|CITY|STATE|ZIP|CCTYPE|CCLAST4|EXPMONTH|EXPYEAR|CVV|TRANSID|STATUS|CORRID|PROC_AMOUNT\n\n";
-    std::cout << "FIELD DESCRIPTIONS:\n";
-    std::cout << "    TRANS_NUM    - Transaction sequence number\n";
-    std::cout << "    AMOUNT       - Order total amount\n";
-    std::cout << "    CURRENCY     - Currency code (USD, etc)\n";
-    std::cout << "    FIRSTNAME    - Customer first name\n";
-    std::cout << "    LASTNAME     - Customer last name\n";
-    std::cout << "    STREET       - Street address\n";
-    std::cout << "    CITY         - City name\n";
-    std::cout << "    STATE        - State/Province code\n";
-    std::cout << "    ZIP          - Postal code\n";
-    std::cout << "    CCTYPE       - Credit card type (Visa, MasterCard, etc)\n";
-    std::cout << "    CCLAST4      - Last 4 digits of credit card\n";
-    std::cout << "    EXPMONTH     - Card expiration month\n";
-    std::cout << "    EXPYEAR      - Card expiration year\n";
-    std::cout << "    CVV          - CVV code\n";
-    std::cout << "    TRANSID      - PayPal transaction ID\n";
-    std::cout << "    STATUS       - Transaction status (Success/Failure)\n";
-    std::cout << "    CORRID       - Correlation ID\n";
-    std::cout << "    PROC_AMOUNT  - Actually processed amount\n\n";
-    std::cout << "EXAMPLES:\n";
-    std::cout << "    # Get all transactions\n";
-    std::cout << "    " << programName << " payments.log\n\n";
-    std::cout << "    # Get only successful transactions\n";
-    std::cout << "    " << programName << " payments.log | grep Success\n\n";
-    std::cout << "    # Count transactions by state\n";
-    std::cout << "    " << programName << " payments.log | cut -d'|' -f8 | sort | uniq -c | sort -nr\n\n";
-    std::cout << "    # Find largest transaction\n";
-    std::cout << "    " << programName << " payments.log | sort -t'|' -k2 -nr | head -1\n\n";
-    std::cout << "    # Get transactions over $500\n";
-    std::cout << "    " << programName << " payments.log | awk -F'|' '$2 > 500'\n\n";
-    std::cout << "    # Summary stats\n";
-    std::cout << "    " << programName << " -s payments.log\n";
+    std::cout << "For detailed information, field descriptions, and examples, run:\n";
+    std::cout << "    " << programName << " --man | man -l -\n";
 }
 
 void generateBashCompletion() {
@@ -263,64 +231,87 @@ complete -c soapdump -n "__fish_soapdump_no_subcommand" -a "*.log" -d "Log file"
 }
 
 void generateManPage() {
-    std::cout << R"(.TH SOAPDUMP 1 "September 2025" "soapdump 0.1.0" "User Commands"
+    std::cout << R"(.TH SOAPDUMP 1 "December 2024" "soapdump 1.0" "User Commands"
 .SH NAME
-soapdump \- PayPal SOAP log parser
+soapdump \- parse PayPal SOAP transaction logs
 .SH SYNOPSIS
 .B soapdump
-[\fIOPTIONS\fR] \fILOGFILE\fR
+[\fIOPTIONS\fR] \fIlogfile\fR
 .SH DESCRIPTION
 .B soapdump
-is a high-performance PayPal SOAP log parser that extracts transaction data from log files and outputs it in a structured format.
+parses PayPal SOAP log files to extract transaction data. It reads log entries containing XML request/response pairs and outputs structured transaction information in pipe-delimited format suitable for further processing with standard Unix tools.
+
+The program matches SOAP requests with their corresponding responses to provide complete transaction records including customer information, payment details, and processing results.
 .SH OPTIONS
 .TP
 .BR \-h ", " \-\-help
-Show help message and exit.
+Display help information and exit
 .TP
 .BR \-s ", " \-\-summary
-Show summary statistics only.
+Display summary statistics instead of raw transaction data
 .TP
 .BR \-r ", " \-\-raw
-Output raw structured data (default).
+Output raw transaction data in pipe-delimited format (default behavior)
 .TP
 .BR \-\-generate-bash-completion
-Generate Bash completion script.
+Output bash shell completion script
 .TP
 .BR \-\-generate-zsh-completion
-Generate Zsh completion script.
+Output zsh shell completion script
 .TP
 .BR \-\-generate-fish-completion
-Generate Fish completion script.
+Output fish shell completion script
 .TP
 .BR \-\-man
-Generate this man page.
+Output this manual page in troff format
 .SH OUTPUT FORMAT
-The output is pipe-separated with the following fields:
-.PP
+By default, transactions are output one per line with pipe-separated fields:
+
 TRANS_NUM|AMOUNT|CURRENCY|FIRSTNAME|LASTNAME|STREET|CITY|STATE|ZIP|CCTYPE|CCLAST4|EXPMONTH|EXPYEAR|CVV|TRANSID|STATUS|CORRID|PROC_AMOUNT
+
+Fields may be empty if not present in the source data.
 .SH EXAMPLES
-.TP
-Get all transactions:
-.B soapdump payments.log
-.TP
-Get only successful transactions:
-.B soapdump payments.log | grep Success
-.TP
+Parse a log file and display all transactions:
+.RS
+.B soapdump paypal.log
+.RE
+
+Show only successful transactions:
+.RS
+.B soapdump paypal.log | grep '|Success|'
+.RE
+
 Count transactions by state:
-.B soapdump payments.log | cut -d'|' -f8 | sort | uniq -c | sort -nr
-.TP
-Find largest transaction:
-.B soapdump payments.log | sort -t'|' -k2 -nr | head -1
-.TP
-Get transactions over $500:
-.B soapdump payments.log | awk -F'|' '$2 > 500'
-.TP
-Summary stats:
-.B soapdump -s payments.log
+.RS
+.B soapdump paypal.log | cut -d'|' -f8 | sort | uniq -c | sort -rn
+.RE
+
+Find the largest transaction amount:
+.RS
+.B soapdump paypal.log | sort -t'|' -k2 -rn | head -1
+.RE
+
+Show transactions over $500:
+.RS
+.B soapdump paypal.log | awk -F'|' '$2 > 500'
+.RE
+
+Display summary statistics:
+.RS
+.B soapdump --summary paypal.log
+.RE
+.SH FILES
+The input file should contain PayPal SOAP API log entries with request and response XML data.
 .SH AUTHOR
-Kieran Klukas <me@dunkirk.sh>
+Written by Kieran Klukas.
+.SH REPORTING BUGS
+Report bugs to <me@dunkirk.sh>
 .SH COPYRIGHT
-Copyright \(co 2025 Kieran Klukas. License: MIT.
+Copyright \(co 2024 Kieran Klukas.
+License MIT: <https://opensource.org/licenses/MIT>
+.br
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
 )" << std::endl;
 }
 

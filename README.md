@@ -52,10 +52,21 @@ cmake --build build --config Release
 
 ### Installation
 
-Install directly from the flake:
-
 ```bash
 nix profile install github:taciturnaxolotl/soapdump
+```
+
+or in the flake:
+
+```nix
+{
+  inputs.terminal-wakatime.url = "github:hackclub/terminal-wakatime";
+
+  outputs = { self, nixpkgs, terminal-wakatime, ... }: {
+    # Access the package as:
+    # terminal-wakatime.packages.${system}.default
+  };
+}
 ```
 
 Or run without installing:
@@ -66,7 +77,7 @@ nix run github:taciturnaxolotl/soapdump -- payments.log
 
 ## Output Format
 
-Tab-separated values with the following fields:
+Pipe-separated values with the following fields:
 
 ```
 TRANS_NUM|AMOUNT|CURRENCY|FIRSTNAME|LASTNAME|STREET|CITY|STATE|ZIP|CCTYPE|CCLAST4|EXPMONTH|EXPYEAR|CVV|TRANSID|STATUS|CORRID|PROC_AMOUNT
