@@ -164,7 +164,7 @@ void showHelp(const char* programName) {
     std::cout << "    --generate-fish-completion    Generate Fish completion script\n";
     std::cout << "    --man                         Generate man page\n\n";
     std::cout << "For detailed information, field descriptions, and examples, run:\n";
-    std::cout << "    " << programName << " --man | man -l -\n";
+    std::cout << "    man " << programName << " \n";
 }
 
 void generateBashCompletion() {

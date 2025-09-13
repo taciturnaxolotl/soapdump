@@ -2,6 +2,8 @@
 
 A high-performance PayPal SOAP log parser written in C++.
 
+![gif of the program in action](https://github.com/taciturnaxolotl/soapdump/blob/main/docs/vhs.gif)
+
 ## Usage
 
 ```bash
