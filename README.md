@@ -39,6 +39,31 @@ nix run . -- payments.log
 nix develop
 ```
 
+### Using CMake
+
+```bash
+# Build the project
+cmake -B build -S .
+cmake --build build --config Release
+
+# Run the parser
+./build/soapdump payments.log
+```
+
+### Installation
+
+Install directly from the flake:
+
+```bash
+nix profile install github:taciturnaxolotl/soapdump
+```
+
+Or run without installing:
+
+```bash
+nix run github:taciturnaxolotl/soapdump -- payments.log
+```
+
 ## Output Format
 
 Tab-separated values with the following fields:
