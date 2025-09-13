@@ -62,11 +62,11 @@ or in the flake:
 
 ```nix
 {
-  inputs.terminal-wakatime.url = "github:hackclub/terminal-wakatime";
+  inputs.soapdump.url = "github:taciturnaxolotl/soapdump";
 
-  outputs = { self, nixpkgs, terminal-wakatime, ... }: {
+  outputs = { self, nixpkgs, soapdump, ... }: {
     # Access the package as:
-    # terminal-wakatime.packages.${system}.default
+    # soapdump.packages.${system}.default
   };
 }
 ```
