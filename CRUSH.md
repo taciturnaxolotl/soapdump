@@ -2,10 +2,10 @@
 
 ## Commands
 - **Build with nix**: `nix build`
-- **Run parser**: `./result/bin/transaction-parser <logfile>`
-- **Test parser**: `./result/bin/transaction-parser -s <logfile>` (summary mode)
-- **Help**: `./result/bin/transaction-parser --help`
-- **Build with clang**: `clang++ -std=c++17 -O3 -o transaction-parser src/transaction-parser.cpp`
+- **Run parser**: `./result/bin/soapdump <logfile>`
+- **Test parser**: `./result/bin/soapdump -s <logfile>` (summary mode)
+- **Help**: `./result/bin/soapdump --help`
+- **Build with clang**: `clang++ -std=c++17 -O3 -o soapdump src/soapdump.cpp`
 
 ## Code Style
 - **Language**: C++17

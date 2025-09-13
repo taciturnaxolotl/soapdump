@@ -2,36 +2,26 @@
 
 A high-performance PayPal SOAP log parser written in C++.
 
-![a media offline screen from davinci resolve](https://hc-cdn.hel1.your-objectstorage.com/s/v3/8744661d883d695adc6b14a17a52ac8970d7c2dd_image.png)
-
-## Features
-
-- Fast parsing of PayPal SOAP transaction logs
-- Structured output for easy analysis
-- Summary statistics mode
-- Pipe-friendly output format
-- Nix flake for reproducible builds
-
 ## Usage
 
 ```bash
 # Get all transactions
-./transaction-parser payments.log
+soapdump payments.log
 
 # Get only successful transactions
-./transaction-parser payments.log | grep Success
+soapdump payments.log | grep Success
 
 # Count transactions by state
-./transaction-parser payments.log | cut -d'|' -f8 | sort | uniq -c | sort -nr
+soapdump payments.log | cut -d'|' -f8 | sort | uniq -c | sort -nr
 
 # Find largest transaction
-./transaction-parser payments.log | sort -t'|' -k2 -nr | head -1
+soapdump payments.log | sort -t'|' -k2 -nr | head -1
 
 # Get transactions over $500
-./transaction-parser payments.log | awk -F'|' '$2 > 500'
+soapdump payments.log | awk -F'|' '$2 > 500'
 
 # Summary stats
-./transaction-parser -s payments.log
+soapdump -s payments.log
 ```
 
 ## Building
@@ -47,17 +37,6 @@ nix run . -- payments.log
 
 # Development shell
 nix develop
-```
-
-### Using CMake
-
-```bash
-# Build the project
-cmake -B build -S .
-cmake --build build --config Release
-
-# Run the parser
-./build/transaction-parser payments.log
 ```
 
 ## Output Format

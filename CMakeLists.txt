@@ -7,10 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Add executable
-add_executable(transaction-parser src/transaction-parser.cpp)
+add_executable(soapdump src/soapdump.cpp)
 
 # Set compiler flags
-target_compile_options(transaction-parser PRIVATE
+target_compile_options(soapdump PRIVATE
     -Wall
     -Wextra
     -Wpedantic
@@ -18,6 +18,6 @@ target_compile_options(transaction-parser PRIVATE
 )
 
 # Install target
-install(TARGETS transaction-parser
+install(TARGETS soapdump
     RUNTIME DESTINATION bin
 )

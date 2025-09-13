@@ -1,6 +1,7 @@
 # Build artifacts
 /build/
 /result
+/soapdump
 /transaction-parser
 
 # Nix

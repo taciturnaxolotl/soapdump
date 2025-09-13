@@ -34,12 +34,12 @@
             
             buildPhase = ''
               mkdir -p bin
-              clang++ -std=c++17 -O3 -o bin/transaction-parser src/transaction-parser.cpp
+              clang++ -std=c++17 -O3 -o bin/soapdump src/soapdump.cpp
             '';
             
             installPhase = ''
               mkdir -p $out/bin
-              cp bin/transaction-parser $out/bin/
+              cp bin/soapdump $out/bin/
             '';
           };
           
@@ -55,13 +55,13 @@
         };
         
         apps = rec {
-          transaction-parser = {
+          soapdump = {
             type = "app";
-            program = "${self.packages.${system}.default}/bin/transaction-parser";
+            program = "${self.packages.${system}.default}/bin/soapdump";
             drv = self.packages.${system}.default;
           };
           
-          default = transaction-parser;
+          default = soapdump;
         };
       }
     );
