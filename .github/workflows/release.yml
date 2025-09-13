@@ -1,0 +1,70 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: x86_64-linux
+          - os: macos-latest
+            platform: x86_64-darwin
+          - os: macos-latest
+            platform: aarch64-darwin
+            extra_args: --option system aarch64-darwin
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@v3.11.2
+
+      - name: Build binary
+        run: |
+          if [[ "${{ matrix.platform }}" == *"-linux" ]]; then
+            # For Linux builds
+            nix build .#packages.${{ matrix.platform }}.default --option system ${{ matrix.platform }} -o result-${{ matrix.platform }}
+          else
+            # For macOS builds
+            nix build .#packages.${{ matrix.platform }}.default ${{ matrix.extra_args }} -o result-${{ matrix.platform }}
+          fi
+          mkdir -p dist
+          cp -r result-${{ matrix.platform }}/bin/* dist/
+          cd dist && tar -czf ../soapdump-${{ matrix.platform }}.tar.gz *
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: soapdump-${{ matrix.platform }}
+          path: soapdump-${{ matrix.platform }}.tar.gz
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            soapdump-x86_64-linux/soapdump-x86_64-linux.tar.gz
+            soapdump-x86_64-darwin/soapdump-x86_64-darwin.tar.gz
+            soapdump-aarch64-darwin/soapdump-aarch64-darwin.tar.gz
+          generate_release_notes: true
