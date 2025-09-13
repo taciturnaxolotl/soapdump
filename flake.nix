@@ -32,15 +32,16 @@
             src = self;
             
             nativeBuildInputs = with pkgs; [ 
-              cmake
               clang
               installShellFiles 
             ];
             
+            dontUseCmakeConfigure = true;
+            
             buildPhase = ''
               # Direct compilation instead of using CMake
               mkdir -p build
-              clang++ -std=c++17 -O3 -o build/soapdump src/soapdump.cpp
+              $CXX -std=c++17 -O3 -o build/soapdump $src/src/soapdump.cpp
             '';
             
             installPhase = ''
